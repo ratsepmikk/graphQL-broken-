@@ -1,21 +1,81 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<link rel="stylesheet" href="index.css"></link>
+  <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <script defer src="main.js"></script>
+  <title>GraphQL</title>
+  <link rel="stylesheet" href="index.css">
+  </link>
 </head>
+
 <body>
   <div id="page-heading">
     <h1 id="page-title">GraphQL</h1>
   </div>
   <div id="main">
     <form id="user-search-form" class="search-container">
-      <input type="text" id="user-search" placeholder="Insert a username"> </input>
+      <input type="text" id="user-search" placeholder="Insert a username" value="liki123"> </input>
       <input type="submit" id="search-button" value="Search"> </input>
     </form>
-    <div id="display"></div>
+    <div id="display">
+
+      <div id="username">username placeholder</div>
+      <div id="information" class="container">
+
+        <img id="avatar" src="" alt="picture"></img>
+        <div id="statistics-container">
+          <div id="statistics">
+            <div id="main-info">
+              <table>
+                <tbody id="main-stats-tbody">
+                  <tr>
+                    <td>ID: </td>
+                    <td id="user-id">0</td>
+                  </tr>
+                  <tr>
+                    <td>Level: </td>
+                    <td id="user-level">0</td>
+                  </tr>
+                  <tr>
+                    <td>Total XP: </td>
+                    <td id="total-xp">0</td>
+                  </tr>
+                  <tr>
+                    <td>Total XP (binary): </td>
+                    <td id="true-total-xp">0</td>
+                  </tr>
+                </tbody>
+              </table>
+              <!-- <div id="audit-box">
+                <div id="audit-ratio-label">
+                  <p>Audit ratio: </p>
+                  <div id="audit-scores">
+                    <div class="audit-xp" id="audit-up">↑: 0</div>
+                    <div class="audit-xp" id="audit-down">↓: 0</div>
+                  </div>
+                </div>
+                <div id="audit-ratio">0</div>
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div id="level-graph-container"></div>
+
+      </div>
+      <div id="graph-1" class="graph-container container">
+        <div class="graph-placeholder">GRAPH 1</div>
+      </div>
+      <!-- <div id="graph-2" class="graph-container container">
+        <div class="graph-placeholder">GRAPH 2</div>
+      </div> -->
+
+    </div>
   </div>
 
   <noscript>Turn on javascript!</noscript>
-  <script src="main.js"></script>
+
 </body>
+
 </html>
