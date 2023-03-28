@@ -88,7 +88,7 @@ function getCumulativeTotalXP(level) {
 	for (; i < level; i++) {
 		cumulativeTotal += LEVELS[i].total;
 	}
-	console.log(`Last level that was added: ${i}`)
+	// console.log(`Last level that was added: ${i}`)
 	return cumulativeTotal;
 }
 let DATA = {
@@ -295,7 +295,7 @@ async function toBeThrottled() {
 		await APICalls()
 
 		// Display data as graphs
-		console.table(JSON.stringify(DATA))
+		// console.table(JSON.stringify(DATA))
 		makeGraphs();
 	}
 }
@@ -336,7 +336,7 @@ function makeLevelGraph(svg) {
 	const MAX = getCumulativeTotalXP(DATA.userLevel + 1)
 	const CURRENT = DATA.totalXP
 	const PER_CENT = Math.round((CURRENT - MIN) / (MAX - MIN) * 100)
-	console.log(`min: ${MIN}, max: ${MAX}, current: ${CURRENT}, per-cent: ${PER_CENT}`)
+	// console.log(`min: ${MIN}, max: ${MAX}, current: ${CURRENT}, per-cent: ${PER_CENT}`)
 	const data = [
 		{ name: "progress", value: CURRENT - MIN },
 		{ name: "needed xp", value: MAX - CURRENT },
@@ -389,7 +389,7 @@ function makeLevelGraph(svg) {
 }
 
 function fillInformation(displayDIV) {
-	console.table(LEVELS)
+	// console.table(LEVELS)
 	/* Basics */
 	displayDIV.select("#avatar")
 		.attr("src", DATA.avatar()).attr("alt", `avatar image of ${DATA.username}`)
@@ -430,6 +430,8 @@ function makeGraphs() {
 	fillInformation(displayDIV)
 
 	d3.select("#graph-1>*").remove()
+	d3.select("#graph-1>*").remove()
+	d3.select("#graph-1>*").remove()
 	/* The 2nd bigger graph was removed as only 2 graphs are needed to pass the audit 
 	and I prefer a more simplistic design*/
 	// d3.select("#graph-2>*").remove() 
@@ -456,7 +458,7 @@ function makeGraphs() {
 		const parser = d3.timeParse('%Y-%m-%dT%H:%M:%S')
 		DATA.tasks.forEach((task) => {
 			if (task.xp === null) {
-				console.log(task)
+				// console.log(task)
 				return
 			}
 			data.push({ taskName: task.taskName, date: parser(task.createdAt.split(".")[0]), xp: task.xp, cumulativeSumOfPrev: 0 })
@@ -471,7 +473,7 @@ function makeGraphs() {
 		})
 	}
 
-	console.table(data)
+	// console.table(data)
 
 	const xScale = d3.scaleTime()
 		.domain(d3.extent(data, function (d) { return d.date; }))
@@ -484,7 +486,7 @@ function makeGraphs() {
 	const line = d3.line()
 		.x(function (d) { return xScale(d.date); })
 		.y(function (d) { return yScale(d.xp); });
-	console.count("No error: ");
+	// console.count("No error: ");
 
 	svg.append("path")
 		.datum(data)
@@ -502,7 +504,6 @@ function makeGraphs() {
 		.attr("cy", function (d) { return yScale(d.xp); })
 		.on("mouseover", function (d) {
 			const [x, y] = d3.mouse(d3.select("html").node());
-			console.log(`x: ${x}y: ${y}`)
 			tooltip.transition()
 				.duration(200)
 				.style("display", "block")
@@ -529,7 +530,6 @@ function makeGraphs() {
 	svg.append("g")
 		.call(d3.axisLeft(yScale));
 }
-
 let timeoutId;
 const throttle = (func, delay) => {
 	return function () {
@@ -541,14 +541,25 @@ const throttle = (func, delay) => {
 		}, delay);
 	};
 };
+let flag = true;
+const throttleFirst = (func, delay) => {
+	return function (...args) {
+		if (flag) {
+			func.apply(this, args);
+			flag = false;
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => flag = true, delay);
+		}
+	}
+}
 
 const main = () => {
 	searchForm.addEventListener('submit', (event) => {
 		event.preventDefault();
-		throttle(() => {
+		throttleFirst(() => {
 			toBeThrottled()
 			searchInput.focus();
-		}, 3000)();
+		}, 2000)();
 	});
 };
 main()
