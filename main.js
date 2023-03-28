@@ -552,6 +552,8 @@ const main = () => {
 	});
 };
 main()
+toBeThrottled()
+searchInput.focus();
 
 // Older graph designs (bar chart design's)
 
