@@ -20,7 +20,6 @@ const taskListQuery = `
 		) {
 			isDone
 			path
-			createdAt
 			object {
 				name
 				type
@@ -43,6 +42,7 @@ const taskXPQuery = `
 			amount
 			type
 			isBonus
+			createdAt
 		}
 	}`
 const bonusTaskXPQuery = `
@@ -182,6 +182,7 @@ const APICalls = async () => {
 			if (xpData.amount === null) { return xpData }
 			let temp = DATA.tasks.get(xpData.object.id)
 			temp.xp = xpData.amount
+			temp.createdAt = xpData.createdAt
 			DATA.tasks.set(xpData.object.id, temp)
 		})
 		// Calculate total XP - Must be separate to ignore tasks that were not passed by the auditors.
@@ -194,20 +195,21 @@ const APICalls = async () => {
 			switch (bonusTask.amount) {
 				case 250000:
 					//	This is most likely the mentor program bonus
-					DATA.tasks.set(bonusTask.object.id, { taskName: bonusTask.object.name, isDone: true, createdAt: bonusTask.createdAt, xp: bonusTask.amount })
+					DATA.tasks.set(bonusTask.object.id, { taskName: "Mentoring", isDone: true, createdAt: bonusTask.createdAt, xp: bonusTask.amount })
 					DATA.totalXP += bonusTask.amount;
 					break;
 				case 390000:
 					//	These points are most likely the rust piscine's points (assigned as a bonus)
-					DATA.tasks.forEach((task, key) => {
-						if (key === 100978) {
-							if (task.xp !== null) {
-								console.error('Points already exist in data')
-							}
-							task.xp = bonusTask.amount
-							DATA.totalXP += bonusTask.amount
-						}
-					})
+					DATA.tasks.set(bonusTask.object.id, { taskName: "Rust Piscine 2022", isDone: true, createdAt: bonusTask.createdAt, xp: bonusTask.amount })
+					DATA.totalXP += bonusTask.amount
+					// DATA.tasks.forEach((task, key) => {
+					// 	if (key === 100978) {
+					// 		if (task.xp !== null) {
+					// 			console.error('Points already exist in data')
+					// 		}
+
+					// 	}
+					// })
 					break;
 				default:
 					alert("Unknown bonus points found, contact the project's owner!"); break;
@@ -452,7 +454,7 @@ function makeGraphs() {
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
-	const data = new Array()
+	let data = new Array()
 
 	{
 		const parser = d3.timeParse('%Y-%m-%dT%H:%M:%S')
@@ -462,6 +464,11 @@ function makeGraphs() {
 				return
 			}
 			data.push({ taskName: task.taskName, date: parser(task.createdAt.split(".")[0]), xp: task.xp, cumulativeSumOfPrev: 0 })
+		})
+
+		// Sorting via time
+		data = data.sort(function (a, b) {
+			return a.date.getTime() - b.date.getTime()
 		})
 
 		let tempTotal = 0
