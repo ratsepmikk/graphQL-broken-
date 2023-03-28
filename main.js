@@ -1,7 +1,9 @@
 // Use this tutorial for implementing lodash: https://www.youtube.com/watch?v=M7WL2Cfa2ww (In the end I used a combination of chatGPT + my brain + stackoverflow posts)
 // Use this link for testing querys: https://cloud.hasura.io/public/graphiql?endpoint=https%3A%2F%2F01.kood.tech%2Fapi%2Fgraphql-engine%2Fv1%2Fgraphql
-// import * as d3 from "d3";
-// Commented out code is legacy and stuff for testing, ignore it :D
+// Use this to find the logic behind level calculations: https://gist.github.com/kigiri/b570c1788c0ef32b4467aa2bcf99b217
+
+// Commented out code is legacy and stuff for testing and possible future upgrades, ignore it :D
+
 const userQuery = `
 	query UserQuery ($name: String = "liki123") {
 		user: user(where: {login: {_eq: $name}}) {
@@ -97,7 +99,7 @@ let DATA = {
 	totalXP: 0,
 	audits_done_xp: 0, // not yet implemented
 	audits_received_xp: 0, // not yet implemented
-	audit_ratio: () => { return calcAuditRatio(this.audits_done_xp, this.audits_received_xp) },
+	audit_ratio: () => { return calcAuditRatio(this.audits_done_xp, this.audits_received_xp) }, // inputs are not implemented
 	tasks: new Map(),
 };
 const calcAuditRatio = (up, down) => {
@@ -192,13 +194,11 @@ const APICalls = async () => {
 			switch (bonusTask.amount) {
 				case 250000:
 					//	This is most likely the mentor program bonus
-					// alert(`250k bonus points found, for ${bonusTask.object.name}`);
 					DATA.tasks.set(bonusTask.object.id, { taskName: bonusTask.object.name, isDone: true, createdAt: bonusTask.createdAt, xp: bonusTask.amount })
 					DATA.totalXP += bonusTask.amount;
 					break;
 				case 390000:
 					//	These points are most likely the rust piscine's points (assigned as a bonus)
-					// alert(`390k bonus points found, for ${bonusTask.object.name}`);
 					DATA.tasks.forEach((task, key) => {
 						if (key === 100978) {
 							if (task.xp !== null) {
@@ -279,7 +279,7 @@ async function toBeThrottled() {
 		totalXP: 0,
 		audits_done_xp: 0, // not yet implemented
 		audits_received_xp: 0, // not yet implemented
-		audit_ratio: () => { return calcAuditRatio(this.audits_done_xp, this.audits_received_xp) },
+		audit_ratio: () => { return calcAuditRatio(this.audits_done_xp, this.audits_received_xp) }, // inputs are not implemented
 		tasks: new Map(),
 	}
 	offsetIndex = 0;
@@ -362,7 +362,7 @@ function makeLevelGraph(svg) {
 		.attr("transform", `translate(${width / 2}${unit}, ${height / 2}${unit})`)
 		.text("Center");
 
-	// arc ( = pie chart slice) generator
+	// arc ( arc == pie chart slice) generator
 	const radius = Math.min(width, height) / 2;
 	const arc = d3.arc()
 		.innerRadius(`${radius * 0.5}${unit}`)
@@ -386,8 +386,6 @@ function makeLevelGraph(svg) {
 	g.select('text')
 		.attr('fill', '#959595')
 		.attr('font-weight', 'bold');
-	// levelGraph.append("rect").attr("id", "level-graph").attr("fill", "green")
-	// console.log(`CurrentXP: ${DATA.totalXP}, PassedXP: ${getCumulativeTotalXP(DATA.userLevel)}, UpcomingXP: ${getCumulativeTotalXP(DATA.userLevel + 1)}`)
 }
 
 function fillInformation(displayDIV) {
@@ -432,7 +430,9 @@ function makeGraphs() {
 	fillInformation(displayDIV)
 
 	d3.select("#graph-1>*").remove()
-	// d3.select("#graph-2>*").remove()
+	/* The 2nd bigger graph was removed as only 2 graphs are needed to pass the audit 
+	and I prefer a more simplistic design*/
+	// d3.select("#graph-2>*").remove() 
 
 	const margin = { top: 50, right: 50, bottom: 50, left: 80 };
 	const width = 1700 - margin.left - margin.right;
@@ -491,20 +491,7 @@ function makeGraphs() {
 		.attr("class", "line")
 		.attr("d", line)
 		.attr("fill", "none")
-		.attr("stroke", "#429945")
-	// .on("mouseover", function (d) {
-	// 	tooltip.transition()
-	// 		.duration(200)
-	// 		.style("opacity", .9);
-	// 	tooltip.html(`Task: ${d.taskName}<br/>XP: ${d.xp}<br/>Date: ${d.date}`)
-	// 		.style("left", (d3.event.pageX) + "px")
-	// 		.style("top", (d3.event.pageY - 28) + "px");
-	// })
-	// .on("mouseout", function (d) {
-	// 	tooltip.transition()
-	// 		.duration(500)
-	// 		.style("opacity", 0);
-	// });
+		.attr("stroke", "#429945");
 
 	svg.selectAll(".point")
 		.data(data)
@@ -541,8 +528,34 @@ function makeGraphs() {
 
 	svg.append("g")
 		.call(d3.axisLeft(yScale));
+}
 
-	// const graphWidth = d3.select("#graph-1").style("width").split("p")[0];
+let timeoutId;
+const throttle = (func, delay) => {
+	return function () {
+		const context = this;
+		const args = arguments;
+		clearTimeout(timeoutId);
+		timeoutId = setTimeout(() => {
+			func.apply(context, args);
+		}, delay);
+	};
+};
+
+const main = () => {
+	searchForm.addEventListener('submit', (event) => {
+		event.preventDefault();
+		throttle(() => {
+			toBeThrottled()
+			searchInput.focus();
+		}, 3000)();
+	});
+};
+main()
+
+// Older graph designs (bar chart design's)
+
+// const graphWidth = d3.select("#graph-1").style("width").split("p")[0];
 	// const graphHeight = d3.select("#graph-1").style("height").split("p")[0];
 	// const barMargin = 5;
 
@@ -628,27 +641,3 @@ function makeGraphs() {
 	// 			return `${graphHeight - barHeight}`
 	// 		});
 	// }
-}
-
-let timeoutId;
-const throttle = (func, delay) => {
-	return function () {
-		const context = this;
-		const args = arguments;
-		clearTimeout(timeoutId);
-		timeoutId = setTimeout(() => {
-			func.apply(context, args);
-		}, delay);
-	};
-};
-
-const main = () => {
-	searchForm.addEventListener('submit', (event) => {
-		event.preventDefault();
-		throttle(() => {
-			toBeThrottled()
-			searchInput.focus();
-		}, 3000)();
-	});
-};
-main()
